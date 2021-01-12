@@ -85,7 +85,7 @@
 
     // Keep a collection of dialog openers, each of which will be bound a click
     // event listener to open the dialog
-    this._openers = $$('[data-a11y-dialog-show="' + this.container.id + '"]');
+    this._openers = $$('[data-a11y-dialog-show="' + this.container.id + '"]:not([data-a11y-dialog-hide])');
     this._openers.forEach(
       function(opener) {
         opener.addEventListener('click', this._show);
@@ -95,13 +95,28 @@
     // Keep a collection of dialog closers, each of which will be bound a click
     // event listener to close the dialog
     this._closers = $$('[data-a11y-dialog-hide]', this.container).concat(
-      $$('[data-a11y-dialog-hide="' + this.container.id + '"]')
+      $$('[data-a11y-dialog-hide="' + this.container.id + '"]:not([data-a11y-dialog-show])')
     );
     this._closers.forEach(
       function(closer) {
         closer.addEventListener('click', this._hide);
       }.bind(this)
     );
+
+    // Внешняя кнопка открытия и закрытия (например гамбургер)
+    this._toggles = $$('[data-a11y-dialog-show="' + this.container.id + '"][data-a11y-dialog-hide]');
+    console.log("🚀 ~ file: a11y-dialog.js ~ line 115 ~ this._btnsOutside", this._toggles)
+    
+    this._toggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        // TODO: добавить изменение aria-label из data-атрибутов
+        if (this.shown) {
+          this._hide();
+        } else {
+          this._show();
+        }
+      })
+    });
 
     // Execute all callbacks registered for the `create` event
     this._fire('create');
