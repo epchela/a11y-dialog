@@ -329,7 +329,7 @@
     // If the dialog is shown and the TAB key is being pressed, make sure the
     // focus stays trapped within the dialog element
     if (this.shown && event.which === TAB_KEY) {
-      trapTabKey(this.dialog, event);
+      trapTabKey(this.dialog, this._toggles[0], event);
     }
   };
 
@@ -343,7 +343,7 @@
   A11yDialog.prototype._maintainFocus = function(event) {
     // If the dialog is shown and the focus is not within the dialog element,
     // move it back to its first focusable child
-    if (this.shown && !this.container.contains(event.target)) {
+    if (this.shown && (document.activeElement !== this._toggles[0] && !this.container.contains(event.target))) {
       setFocusToFirstItem(this.dialog);
     }
   };
@@ -426,27 +426,45 @@
    * Trap the focus inside the given element
    *
    * @param {Element} node
+   * @param {Element} toggle
    * @param {Event} event
    */
-  function trapTabKey(node, event) {
+  function trapTabKey(node, toggle, event) {
     var focusableChildren = getFocusableChildren(node);
     var focusedItemIndex = focusableChildren.indexOf(document.activeElement);
 
     // If the SHIFT key is being pressed while tabbing (moving backwards) and
     // the currently focused item is the first one, move the focus to the last
     // focusable item from the dialog element
-    if (event.shiftKey && focusedItemIndex === 0) {
-      focusableChildren[focusableChildren.length - 1].focus();
-      event.preventDefault();
+    if (event.shiftKey) {
+      if (focusedItemIndex === 0) {
+        if (toggle) {
+          toggle.focus();
+        } else {
+          focusableChildren[focusableChildren.length - 1].focus();
+        }
+
+        event.preventDefault();
+      } else if (document.activeElement === toggle) {
+        focusableChildren[focusableChildren.length - 1].focus();
+        event.preventDefault();
+      }
       // If the SHIFT key is not being pressed (moving forwards) and the currently
       // focused item is the last one, move the focus to the first focusable item
       // from the dialog element
-    } else if (
-      !event.shiftKey &&
-      focusedItemIndex === focusableChildren.length - 1
-    ) {
-      focusableChildren[0].focus();
-      event.preventDefault();
+    } else if (!event.shiftKey) {
+      if (focusedItemIndex === focusableChildren.length - 1) {
+        if (toggle) {
+          toggle.focus();
+        } else {
+          focusableChildren[0].focus();
+        }
+
+        event.preventDefault();
+      } else if (document.activeElement === toggle) {
+        focusableChildren[0].focus();
+        event.preventDefault();
+      }
     }
   }
 
