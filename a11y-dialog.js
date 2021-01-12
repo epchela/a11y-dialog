@@ -444,7 +444,7 @@
   function getSiblings(node) {
     var nodes = toArray(node.parentNode.childNodes);
     var siblings = nodes.filter(function(node) {
-      return node.nodeType === 1;
+      return node.nodeType === 1 && node.tagName !== "SCRIPT" && node.tagName !== "STYLE";
     });
 
     siblings.splice(siblings.indexOf(node), 1);
