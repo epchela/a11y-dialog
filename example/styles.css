@@ -10,6 +10,10 @@
   display: none;
 }
 
+[data-a11y-dialog-native-toggle]:not(.is-open) .dialog-overlay {
+  display: none;
+}
+
 /**
  * When `<dialog>` is not supported, its default display is `inline` which can
  * cause layout issues.

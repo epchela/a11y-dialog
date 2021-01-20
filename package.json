@@ -24,6 +24,7 @@
     "a11y-dialog.d.ts"
   ],
   "scripts": {
+    "dev-watch": "rollup a11y-dialog.js --file example/main.js -w",
     "copy": "cp a11y-dialog.js example/main.js",
     "minify": "uglifyjs a11y-dialog.js -o a11y-dialog.min.js -c -m",
     "build": "npm run minify && npm run copy",
@@ -53,6 +54,7 @@
     "husky": "^0.14.3",
     "lint-staged": "^6.0.0",
     "prettier": "^1.10.2",
+    "rollup": "^2.36.1",
     "semistandard": "^7.0.5",
     "uglify-js": "^2.6.1"
   }
