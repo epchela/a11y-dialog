@@ -1,53 +1,100 @@
 <!doctype html>
 <html lang="en">
-  <head>
-      <meta charset="utf-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>A11y Dialog</title>
-      <link rel="stylesheet" href="./styles.css" />
-  </head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>A11y Dialog</title>
+  <link rel="stylesheet" href="./styles.css"/>
+  <link rel="stylesheet" href="./hamburgers.css">
+</head>
 
-  <body>
-    <div class="main" id="main" aria-label="Content">
-      <h1>A11y Dialog</h1>
+<body>
+<header style="position: relative; z-index: 3; background-color: antiquewhite;">
+  <button id="open-close" class="hamburger  hamburger--squeeze" type="button"
+          data-a11y-dialog-show="my-new-accessible-dialog" data-a11y-dialog-hide="my-new-accessible-dialog"
+          aria-label="open dialog" data-a11y-dialog-label-open="open dialog"
+          data-a11y-dialog-label-close="close dialog">
+        <span class="hamburger-box">
+          <span class="hamburger-inner"></span>
+        </span>
+  </button>
+</header>
+<div class="main" id="main" aria-label="Content">
+  <h1>A11y Dialog</h1>
 
-      <p><a href="https://github.com/edenspiekermann/a11y-dialog">Get the code on GitHub</a> — <button class="link-like" data-a11y-dialog-show="my-accessible-dialog">Open the dialog window</button></p>
+  <p><a href="https://github.com/edenspiekermann/a11y-dialog">Get the code on GitHub</a> —
+    <button class="link-like" data-a11y-dialog-show="my-accessible-dialog">Open the dialog window</button>
+  </p>
 
-      <p>This page demonstrates how to make a dialog window as accessible as possible to assistive technology users. Dialog windows are especially problematic for screen reader users. Often times the user is able to “escape” the window and interact with other parts of the page when they should not be able to. This is partially due to the way screen reader software interacts with the browser.</p>
+  <p>This page demonstrates how to make a dialog window as accessible as possible to assistive technology users. Dialog
+    windows are especially problematic for screen reader users. Often times the user is able to “escape” the window and
+    interact with other parts of the page when they should not be able to. This is partially due to the way screen
+    reader software interacts with the browser.</p>
 
-      <p>To see this in action, you just need to <button class="link-like" data-a11y-dialog-show="my-accessible-dialog">open the dialog window</button>. Once it’s open, you should not be able to interact with other links on the main page like <a href="https://github.com/edenspiekermann/a11y-dialog">going to the main GitHub page</a>. The focus is said to be “trapped” inside the dialog until the user explicitely decides to leave it.</p>
+  <p>To see this in action, you just need to
+    <button class="link-like" data-a11y-dialog-show="my-accessible-dialog">open the dialog window</button>
+    . Once it’s open, you should not be able to interact with other links on the main page like <a
+            href="https://github.com/edenspiekermann/a11y-dialog">going to the main GitHub page</a>. The focus is said
+    to be “trapped” inside the dialog until the user explicitely decides to leave it.
+  </p>
 
-      <p>On top of that, this implementation provides all the usual mandatory bits from a dialog window: correct usage or ARIA landmarks, absolute freedom in regard to the styling, closing when pressing <code>ESC</code>, closing when clicking the background overlay, closing when clicking the close button, a simple yet powerful DOM API, for 1.4Kb of JavaScript. Oh, and also it is fully tested using a headless browser to make sure it works as intended.</p>
+  <p>On top of that, this implementation provides all the usual mandatory bits from a dialog window: correct usage or
+    ARIA landmarks, absolute freedom in regard to the styling, closing when pressing <code>ESC</code>, closing when
+    clicking the background overlay, closing when clicking the close button, a simple yet powerful DOM API, for 1.4Kb of
+    JavaScript. Oh, and also it is fully tested using a headless browser to make sure it works as intended.</p>
 
-      <p><strong>No more excuse now. Make your dialog windows accessible.</strong></p>
+  <p><strong>No more excuse now. Make your dialog windows accessible.</strong></p>
 
-      <footer role="contentinfo">
-        &copy;&nbsp;2016 <a href="http://edenspiekermann.com">Edenspiekermann</a>
-      </footer>
-    </div>
+  <footer role="contentinfo">
+    &copy;&nbsp;2016 <a href="http://edenspiekermann.com">Edenspiekermann</a>
+  </footer>
+</div>
 
-    <div class="dialog" id="my-accessible-dialog" aria-hidden="true">
-      <div class="dialog-overlay" tabindex="-1" data-a11y-dialog-hide></div>
-      <dialog class="dialog-content" aria-labelledby="dialogTitle" aria-describedby="dialogDescription">
-        <button data-a11y-dialog-hide class="dialog-close" aria-label="Close this dialog window">&times;</button>
+<div class="dialog" id="my-accessible-dialog" aria-hidden="true">
+  <div class="dialog-overlay" tabindex="-1" data-a11y-dialog-hide></div>
+  <dialog class="dialog-content" aria-labelledby="dialogTitle" aria-describedby="dialogDescription">
+    <button data-a11y-dialog-hide class="dialog-close" aria-label="Close this dialog window">&times;</button>
 
-        <h1 id="dialogTitle">Subscribe to ESPI Newsletter</h1>
+    <h1 id="dialogTitle">Subscribe to ESPI Newsletter</h1>
 
-        <p id="dialogDescription">Fill in the ridiculously small form below to receive our ridiculously cool newsletter!</p>
+    <p id="dialogDescription">Fill in the ridiculously small form below to receive our ridiculously cool newsletter!</p>
 
-        <form action="http://edenspiekermann.us10.list-manage.com/subscribe/post?u=927d6a7cf437da88aac7a87ec&amp;id=6823ab7bb8" method="post" target="_blank">
-          <label for="email">Email (required)</label>
-          <input type="email" name="EMAIL" id="email" placeholder="john.doe@gmail.com" required>
-          <button type="submit" name="button">Sign up</button>
-        </form>
-      </dialog>
-    </div>
+    <form action="http://edenspiekermann.us10.list-manage.com/subscribe/post?u=927d6a7cf437da88aac7a87ec&amp;id=6823ab7bb8"
+          method="post" target="_blank">
+      <label for="email">Email (required)</label>
+      <input type="email" name="EMAIL" id="email" placeholder="john.doe@gmail.com" required>
+      <button type="submit" name="button">Sign up</button>
+    </form>
+  </dialog>
+</div>
 
-    <script src="main.js"></script>
-    <script>
-    (function () {
-      document.addEventListener('DOMContentLoaded', function () {
+<div class="dialog" id="my-new-accessible-dialog" aria-hidden="true">
+  <div class="dialog-overlay" tabindex="-1" data-a11y-dialog-hide></div>
+  <!--   Если кнопка тоггл (открывает/закрывает), то div c role='alertdialog'   -->
+  <!--   Иначе ScreenReader в Safari не выходит из диалога   -->
+  <div role="alertdialog" class="dialog-content" aria-labelledby="dialogTitle1" aria-describedby="dialogDescription1">
+    <!-- <button data-a11y-dialog-hide class="dialog-close" aria-label="Close this dialog window">&times;</button> -->
+
+    <h1 id="dialogTitle1">Subscribe to ESPI Newsletter</h1>
+
+    <p id="dialogDescription1">Fill in the ridiculously small form below to receive our ridiculously cool
+      newsletter!</p>
+
+    <form action="http://edenspiekermann.us10.list-manage.com/subscribe/post?u=927d6a7cf437da88aac7a87ec&amp;id=6823ab7bb8"
+          method="post" target="_blank">
+      <label for="email1">Email (required)</label>
+      <input type="email" name="EMAIL" id="email1" placeholder="john.doe@gmail.com" required>
+      <button type="submit" name="button">Sign up</button>
+    </form>
+  </div>
+</div>
+
+<script src="main.js"></script>
+<script>
+  (function () {
+    document.addEventListener('DOMContentLoaded', function () {
+      // dialog 1
+      (function () {
         var dialogEl = document.getElementById('my-accessible-dialog');
         var mainEl = document.getElementById('main');
         var dialog = new window.A11yDialog(dialogEl, mainEl);
@@ -56,13 +103,32 @@
           console.log(dialogEl);
           console.log(triggerEl);
         });
+      }());
 
-        // To manually control the dialog:
-        // dialog.show()
-        // dialog.hide()
-        // dialog.destroy()
-      });
-    }());
-    </script>
-  </body>
+      // dialog 2
+      (function () {
+        var dialogEl = document.getElementById('my-new-accessible-dialog');
+        var btn = document.querySelector('#open-close');
+        var dialog = new window.A11yDialog(dialogEl);
+
+        dialog.on('show', function (dialogEl) {
+          console.log('Dialog open!');
+          console.log(dialogEl);
+          btn.classList.add('is-active');
+        });
+
+        dialog.on('hide', function () {
+          btn.classList.remove('is-active');
+        });
+      }());
+
+
+      // To manually control the dialog:
+      // dialog.show()
+      // dialog.hide()
+      // dialog.destroy()
+    });
+  }());
+</script>
+</body>
 </html>

@@ -13,6 +13,41 @@
 
 You can try the [live demo ↗](http://edenspiekermann.github.io/a11y-dialog/example/).
 
+## Что изменилось
+Появилась возможность задать кнопку-переключатель (открыть/закрыть), которая находится снаружи диалога.
+
+## Как использовать
+Элемент диалога должен иметь `role="alertdialog"`, например `<div role="alertdialog">`. Если использовать `role="dialog"` (например когда элемент`<dialog>` или `<div role="dialog">`), то будет проблема со скринридером.
+
+###Кнопка
+Пример кнопки:
+```html
+<button type="button"
+        aria-label="open dialog"
+        data-a11y-dialog-show="dialog-id"
+        data-a11y-dialog-hide="dialog-id"
+        data-a11y-dialog-label-open="open dialog"
+        data-a11y-dialog-label-close="close dialog">
+</button>
+```
+Необязательно задавать `dialog-id` для `data-a11y-dialog-hide`.
+
+В зависимости от текущего состояния кнопки, в `aria-label` устанавливается значение `data-a11y-dialog-label-open` или `data-a11y-dialog-label-close`.
+
+###Стили
+К стилям добавить следующее:
+```css
+[data-a11y-dialog-native-toggle]:not(.is-open) .dialog-overlay {
+  display: none;
+}
+```
+
+### Особенности
+1) `z-index` главного родителя кнопки (скорее всего это будет `<header>`) должен быть больше, чем у элементов диалога `.dialog-overlay` и `.dialog-content`.
+Но если используется несколько диалогов (например с кнопкой-переключателем и обычный диалог), то нужно для обычного диалога задать z-index больше чем у главного родителя кнопки.
+   
+2) Overlay - нужно добавлять и для главного родителя кнопки (и далее в глубь, если кнопка где то глубоко находится). Но чтобы он не перекрывал саму кнопку.
+
 ## Installation
 
 ```

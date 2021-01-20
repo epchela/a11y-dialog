@@ -32,6 +32,7 @@
     // removeEventListener to avoid losing references
     this._show = this.show.bind(this);
     this._hide = this.hide.bind(this);
+    this._toggleHandler = this.toggleHandler.bind(this);
     this._maintainFocus = this._maintainFocus.bind(this);
     this._bindKeypress = this._bindKeypress.bind(this);
 
@@ -58,9 +59,12 @@
    * @return {this}
    */
   A11yDialog.prototype.create = function(targets) {
+    // Внешняя кнопка открытия и закрытия (например гамбургер)
+    this._toggleBtn = document.querySelector('[data-a11y-dialog-show="' + this.container.id + '"][data-a11y-dialog-hide]');
+
     // Keep a collection of nodes to disable/enable when toggling the dialog
     this._targets =
-      this._targets || collect(targets) || getSiblings(this.container);
+      this._targets || collect(targets) || getSiblings(this.container, this._toggleBtn);
 
     // Set the `shown` property to match the status from the DOM
     this.shown = this.dialog.hasAttribute('open');
@@ -70,22 +74,9 @@
     // See: https://github.com/edenspiekermann/a11y-dialog/commit/6ba711a777aed0dbda0719a18a02f742098c64d9#commitcomment-28694166
     this.dialog.setAttribute('role', this.role);
 
-    if (!this.useDialog) {
-      if (this.shown) {
-        this.container.removeAttribute('aria-hidden');
-      } else {
-        this.container.setAttribute('aria-hidden', true);
-      }
-    } else {
-      this.container.setAttribute('data-a11y-dialog-native', '');
-      // Remove initial `aria-hidden` from container
-      // See: https://github.com/edenspiekermann/a11y-dialog/pull/117#issuecomment-706056246
-      this.container.removeAttribute('aria-hidden');
-    }
-
     // Keep a collection of dialog openers, each of which will be bound a click
     // event listener to open the dialog
-    this._openers = $$('[data-a11y-dialog-show="' + this.container.id + '"]');
+    this._openers = $$('[data-a11y-dialog-show="' + this.container.id + '"]:not([data-a11y-dialog-hide])');
     this._openers.forEach(
       function(opener) {
         opener.addEventListener('click', this._show);
@@ -95,13 +86,38 @@
     // Keep a collection of dialog closers, each of which will be bound a click
     // event listener to close the dialog
     this._closers = $$('[data-a11y-dialog-hide]', this.container).concat(
-      $$('[data-a11y-dialog-hide="' + this.container.id + '"]')
+      $$('[data-a11y-dialog-hide="' + this.container.id + '"]:not([data-a11y-dialog-show])')
     );
     this._closers.forEach(
       function(closer) {
         closer.addEventListener('click', this._hide);
       }.bind(this)
     );
+
+    if (this._toggleBtn) {
+      this._toggleBtn.addEventListener('click', this._toggleHandler)
+    }
+
+    if (!this.useDialog) {
+      if (this.shown) {
+        this.container.removeAttribute('aria-hidden');
+      } else {
+        this.container.setAttribute('aria-hidden', 'true');
+      }
+    } else {
+      if (this._toggleBtn) {
+        this.container.setAttribute('data-a11y-dialog-native-toggle', '');
+      } else {
+        this.container.setAttribute('data-a11y-dialog-native', '');
+      }
+      // Remove initial `aria-hidden` from container
+      // See: https://github.com/edenspiekermann/a11y-dialog/pull/117#issuecomment-706056246
+      this.container.removeAttribute('aria-hidden');
+    }
+
+    if (this._toggleBtn && this.role === 'dialog') {
+      console.warn('Don\'t allow use toggleBtn and <div> with role="dialog"!');
+    }
 
     // Execute all callbacks registered for the `create` event
     this._fire('create');
@@ -130,11 +146,18 @@
     focusedBeforeDialog = document.activeElement;
 
     if (this.useDialog) {
-      this.dialog.showModal(event instanceof Event ? void 0 : event);
+      if (this._toggleBtn) {
+        this.container.classList.add('is-open');
+        this.dialog.show(event instanceof Event ? void 0 : event)
+      } else {
+        this.dialog.showModal(event instanceof Event ? void 0 : event);
+      }
     } else {
       this.dialog.setAttribute('open', '');
       this.container.removeAttribute('aria-hidden');
-      
+    }
+
+    if (!(this.useDialog && !this._toggleBtn)) {
       // Iterate over the targets to disable them by setting their `aria-hidden`
       // attribute to `true` and, if present, storing the current value of `aria-hidden`
       this._targets.forEach(function(target) {
@@ -177,6 +200,7 @@
     this.shown = false;
 
     if (this.useDialog) {
+      this.container.classList.remove('is-open');
       this.dialog.close(event instanceof Event ? void 0 : event);
     } else {
       this.dialog.removeAttribute('open');
@@ -211,6 +235,24 @@
 
     return this;
   };
+
+  /**
+   * Toggle visibility the dialog element
+   *
+   * @param {Event} event
+   * @return {this}
+   */
+  A11yDialog.prototype.toggleHandler = function (event) {
+    const ct = event.currentTarget;
+
+    if (this.shown) {
+      this._hide();
+      ct.setAttribute('arial-label', ct.getAttribute('data-a11y-dialog-label-open'));
+    } else {
+      this._show();
+      ct.setAttribute('arial-label', ct.getAttribute('data-a11y-dialog-label-close'));
+    }
+  }
 
   /**
    * Destroy the current instance (after making sure the dialog has been hidden)
@@ -314,7 +356,7 @@
     // If the dialog is shown and the TAB key is being pressed, make sure the
     // focus stays trapped within the dialog element
     if (this.shown && event.which === TAB_KEY) {
-      trapTabKey(this.dialog, event);
+      trapTabKey(this.dialog, this._toggleBtn, event);
     }
   };
 
@@ -328,7 +370,7 @@
   A11yDialog.prototype._maintainFocus = function(event) {
     // If the dialog is shown and the focus is not within the dialog element,
     // move it back to its first focusable child
-    if (this.shown && !this.container.contains(event.target)) {
+    if (this.shown && (document.activeElement !== this._toggleBtn && !this.container.contains(event.target))) {
       setFocusToFirstItem(this.dialog);
     }
   };
@@ -411,27 +453,45 @@
    * Trap the focus inside the given element
    *
    * @param {Element} node
+   * @param {Element} toggle
    * @param {Event} event
    */
-  function trapTabKey(node, event) {
+  function trapTabKey(node, toggle, event) {
     var focusableChildren = getFocusableChildren(node);
     var focusedItemIndex = focusableChildren.indexOf(document.activeElement);
 
     // If the SHIFT key is being pressed while tabbing (moving backwards) and
     // the currently focused item is the first one, move the focus to the last
     // focusable item from the dialog element
-    if (event.shiftKey && focusedItemIndex === 0) {
-      focusableChildren[focusableChildren.length - 1].focus();
-      event.preventDefault();
+    if (event.shiftKey) {
+      if (focusedItemIndex === 0) {
+        if (toggle) {
+          toggle.focus();
+        } else {
+          focusableChildren[focusableChildren.length - 1].focus();
+        }
+
+        event.preventDefault();
+      } else if (document.activeElement === toggle) {
+        focusableChildren[focusableChildren.length - 1].focus();
+        event.preventDefault();
+      }
       // If the SHIFT key is not being pressed (moving forwards) and the currently
       // focused item is the last one, move the focus to the first focusable item
       // from the dialog element
-    } else if (
-      !event.shiftKey &&
-      focusedItemIndex === focusableChildren.length - 1
-    ) {
-      focusableChildren[0].focus();
-      event.preventDefault();
+    } else if (!event.shiftKey) {
+      if (focusedItemIndex === focusableChildren.length - 1) {
+        if (toggle) {
+          toggle.focus();
+        } else {
+          focusableChildren[0].focus();
+        }
+
+        event.preventDefault();
+      } else if (document.activeElement === toggle) {
+        focusableChildren[0].focus();
+        event.preventDefault();
+      }
     }
   }
 
@@ -439,15 +499,73 @@
    * Retrieve siblings from given element
    *
    * @param {Element} node
+   * @param {HTMLButtonElement} toggle
    * @return {Array<Element>}
    */
-  function getSiblings(node) {
+  function getSiblings(node, toggle= null) {
     var nodes = toArray(node.parentNode.childNodes);
     var siblings = nodes.filter(function(node) {
-      return node.nodeType === 1;
+      return node.nodeType === 1 && node.tagName !== "SCRIPT" && node.tagName !== "STYLE";
     });
 
     siblings.splice(siblings.indexOf(node), 1);
+
+    // Если диалог с тогглом, то находим и добавляем его соседей к siblings.
+    // has toggle
+    if (toggle) {
+      const { tree, deep } = getToggleParent(siblings, toggle);
+      const filteredSiblings = siblings.filter(sibling => sibling !== tree[deep - 1]);
+      const toggleSiblings = getToggleSiblings(deep, tree);
+      return [...filteredSiblings, ...toggleSiblings];
+    }
+
+    return siblings;
+  }
+
+  /**
+   * Находим главного родителя, который находится в body.
+   *
+   * @param {Element[]} siblings
+   * @param {HTMLButtonElement} toggle
+   */
+  function getToggleParent(siblings = [], toggle) {
+    let deep = 0;
+    let tree = [];
+    let parentElm = undefined;
+
+    while (!siblings.some(elm => elm === parentElm)) {
+      if (parentElm === undefined) {
+        parentElm = toggle;
+      } else {
+        parentElm = parentElm.parentElement;
+      }
+
+      if (parentElm === document.body) {
+        break;
+      }
+
+      deep++;
+      tree.push(parentElm);
+    }
+
+    return {deep, tree};
+  }
+
+  /**
+   * Находим элементы, которые нужно скрывать (inert и aria-hidden).
+   * Это соседи кнопки и соседи родителей, вплоть то главного родителя (который сосед модалки)
+   *
+   * @param {number} deep
+   * @param {Element[]} tree
+   */
+  function getToggleSiblings(deep = 0, tree = []) {
+    const elms = [...tree.slice(0, deep - 1)];
+    let siblings = [];
+
+    elms.forEach(elm => {
+      const elmSiblings = getSiblings(elm);
+      siblings = [...siblings, ...elmSiblings];
+    });
 
     return siblings;
   }
