@@ -58,9 +58,12 @@
    * @return {this}
    */
   A11yDialog.prototype.create = function(targets) {
+    // Внешняя кнопка открытия и закрытия (например гамбургер)
+    this._toggleBtn = document.querySelector('[data-a11y-dialog-show="' + this.container.id + '"][data-a11y-dialog-hide]');
+
     // Keep a collection of nodes to disable/enable when toggling the dialog
     this._targets =
-      this._targets || collect(targets) || getSiblings(this.container);
+      this._targets || collect(targets) || getSiblings(this.container, this._toggleBtn);
 
     // Set the `shown` property to match the status from the DOM
     this.shown = this.dialog.hasAttribute('open');
@@ -69,19 +72,6 @@
     // implied by all screen-readers (yet)
     // See: https://github.com/edenspiekermann/a11y-dialog/commit/6ba711a777aed0dbda0719a18a02f742098c64d9#commitcomment-28694166
     this.dialog.setAttribute('role', this.role);
-
-    if (!this.useDialog) {
-      if (this.shown) {
-        this.container.removeAttribute('aria-hidden');
-      } else {
-        this.container.setAttribute('aria-hidden', true);
-      }
-    } else {
-      this.container.setAttribute('data-a11y-dialog-native', '');
-      // Remove initial `aria-hidden` from container
-      // See: https://github.com/edenspiekermann/a11y-dialog/pull/117#issuecomment-706056246
-      this.container.removeAttribute('aria-hidden');
-    }
 
     // Keep a collection of dialog openers, each of which will be bound a click
     // event listener to open the dialog
@@ -103,20 +93,38 @@
       }.bind(this)
     );
 
-    // Внешняя кнопка открытия и закрытия (например гамбургер)
-    this._toggles = $$('[data-a11y-dialog-show="' + this.container.id + '"][data-a11y-dialog-hide]');
-    console.log("🚀 ~ file: a11y-dialog.js ~ line 115 ~ this._btnsOutside", this._toggles)
-    
-    this._toggles.forEach(toggle => {
-      toggle.addEventListener('click', () => {
-        // TODO: добавить изменение aria-label из data-атрибутов
+    if (this._toggleBtn) {
+      this._toggleBtn.addEventListener('click', (event) => {
+        const ct = event.currentTarget;
+
         if (this.shown) {
           this._hide();
+          ct.setAttribute('arial-label', ct.getAttribute('data-a11y-dialog-label-open'));
         } else {
           this._show();
+          ct.setAttribute('arial-label', ct.getAttribute('data-a11y-dialog-label-close'));
         }
       })
-    });
+    }
+
+
+
+    if (!this.useDialog) {
+      if (this.shown) {
+        this.container.removeAttribute('aria-hidden');
+      } else {
+        this.container.setAttribute('aria-hidden', 'true');
+      }
+    } else {
+      if (this._toggleBtn) {
+        this.container.setAttribute('data-a11y-dialog-native-toggle', '');
+      } else {
+        this.container.setAttribute('data-a11y-dialog-native', '');
+      }
+      // Remove initial `aria-hidden` from container
+      // See: https://github.com/edenspiekermann/a11y-dialog/pull/117#issuecomment-706056246
+      this.container.removeAttribute('aria-hidden');
+    }
 
     // Execute all callbacks registered for the `create` event
     this._fire('create');
@@ -145,11 +153,18 @@
     focusedBeforeDialog = document.activeElement;
 
     if (this.useDialog) {
-      this.dialog.showModal(event instanceof Event ? void 0 : event);
+      if (this._toggleBtn) {
+        this.container.classList.add('is-open');
+        this.dialog.show(event instanceof Event ? void 0 : event)
+      } else {
+        this.dialog.showModal(event instanceof Event ? void 0 : event);
+      }
     } else {
       this.dialog.setAttribute('open', '');
       this.container.removeAttribute('aria-hidden');
-      
+    }
+
+    if (!(this.useDialog && !this._toggleBtn)) {
       // Iterate over the targets to disable them by setting their `aria-hidden`
       // attribute to `true` and, if present, storing the current value of `aria-hidden`
       this._targets.forEach(function(target) {
@@ -192,6 +207,7 @@
     this.shown = false;
 
     if (this.useDialog) {
+      this.container.classList.remove('is-open');
       this.dialog.close(event instanceof Event ? void 0 : event);
     } else {
       this.dialog.removeAttribute('open');
@@ -329,7 +345,7 @@
     // If the dialog is shown and the TAB key is being pressed, make sure the
     // focus stays trapped within the dialog element
     if (this.shown && event.which === TAB_KEY) {
-      trapTabKey(this.dialog, this._toggles[0], event);
+      trapTabKey(this.dialog, this._toggleBtn, event);
     }
   };
 
@@ -343,7 +359,7 @@
   A11yDialog.prototype._maintainFocus = function(event) {
     // If the dialog is shown and the focus is not within the dialog element,
     // move it back to its first focusable child
-    if (this.shown && (document.activeElement !== this._toggles[0] && !this.container.contains(event.target))) {
+    if (this.shown && (document.activeElement !== this._toggleBtn && !this.container.contains(event.target))) {
       setFocusToFirstItem(this.dialog);
     }
   };
@@ -475,7 +491,7 @@
    * @param {HTMLButtonElement} toggle
    * @return {Array<Element>}
    */
-  function getSiblings(node) {
+  function getSiblings(node, toggle= null) {
     var nodes = toArray(node.parentNode.childNodes);
     var siblings = nodes.filter(function(node) {
       return node.nodeType === 1 && node.tagName !== "SCRIPT" && node.tagName !== "STYLE";
