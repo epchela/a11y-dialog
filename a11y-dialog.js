@@ -58,7 +58,7 @@
    * @param {(NodeList | Element | string)} targets
    * @return {this}
    */
-  A11yDialog.prototype.create = function(targets) {
+  A11yDialog.prototype.create = function (targets) {
     // Внешняя кнопка открытия и закрытия (например гамбургер)
     this._toggleBtn = document.querySelector('[data-a11y-dialog-show="' + this.container.id + '"][data-a11y-dialog-hide]');
 
@@ -95,7 +95,7 @@
     );
 
     if (this._toggleBtn) {
-      this._toggleBtn.addEventListener('click', this._toggleHandler)
+      this._toggleBtn.addEventListener('click', this._toggleHandler);
     }
 
     if (!this.useDialog) {
@@ -148,7 +148,7 @@
     if (this.useDialog) {
       if (this._toggleBtn) {
         this.container.classList.add('is-open');
-        this.dialog.show(event instanceof Event ? void 0 : event)
+        this.dialog.show(event instanceof Event ? void 0 : event);
       } else {
         this.dialog.showModal(event instanceof Event ? void 0 : event);
       }
@@ -252,7 +252,7 @@
       this._show();
       ct.setAttribute('arial-label', ct.getAttribute('data-a11y-dialog-label-close'));
     }
-  }
+  };
 
   /**
    * Destroy the current instance (after making sure the dialog has been hidden)
@@ -502,10 +502,10 @@
    * @param {HTMLButtonElement} toggle
    * @return {Array<Element>}
    */
-  function getSiblings(node, toggle= null) {
+  function getSiblings(node, toggle = null) {
     var nodes = toArray(node.parentNode.childNodes);
-    var siblings = nodes.filter(function(node) {
-      return node.nodeType === 1 && node.tagName !== "SCRIPT" && node.tagName !== "STYLE";
+    var siblings = nodes.filter(function (node) {
+      return node.nodeType === 1 && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE';
     });
 
     siblings.splice(siblings.indexOf(node), 1);
@@ -531,7 +531,7 @@
   function getToggleParent(siblings = [], toggle) {
     let deep = 0;
     let tree = [];
-    let parentElm = undefined;
+    let parentElm;
 
     while (!siblings.some(elm => elm === parentElm)) {
       if (parentElm === undefined) {
@@ -548,7 +548,7 @@
       tree.push(parentElm);
     }
 
-    return {deep, tree};
+    return { deep, tree };
   }
 
   /**
