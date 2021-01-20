@@ -472,6 +472,7 @@
    * Retrieve siblings from given element
    *
    * @param {Element} node
+   * @param {HTMLButtonElement} toggle
    * @return {Array<Element>}
    */
   function getSiblings(node) {
@@ -481,6 +482,63 @@
     });
 
     siblings.splice(siblings.indexOf(node), 1);
+
+    // Если диалог с тогглом, то находим и добавляем его соседей к siblings.
+    // has toggle
+    if (toggle) {
+      const { tree, deep } = getToggleParent(siblings, toggle);
+      const filteredSiblings = siblings.filter(sibling => sibling !== tree[deep - 1]);
+      const toggleSiblings = getToggleSiblings(deep, tree);
+      return [...filteredSiblings, ...toggleSiblings];
+    }
+
+    return siblings;
+  }
+
+  /**
+   * Находим главного родителя, который находится в body.
+   *
+   * @param {Element[]} siblings
+   * @param {HTMLButtonElement} toggle
+   */
+  function getToggleParent(siblings = [], toggle) {
+    let deep = 0;
+    let tree = [];
+    let parentElm = undefined;
+
+    while (!siblings.some(elm => elm === parentElm)) {
+      if (parentElm === undefined) {
+        parentElm = toggle;
+      } else {
+        parentElm = parentElm.parentElement;
+      }
+
+      if (parentElm === document.body) {
+        break;
+      }
+
+      deep++;
+      tree.push(parentElm);
+    }
+
+    return {deep, tree};
+  }
+
+  /**
+   * Находим элементы, которые нужно скрывать (inert и aria-hidden).
+   * Это соседи кнопки и соседи родителей, вплоть то главного родителя (который сосед модалки)
+   *
+   * @param {number} deep
+   * @param {Element[]} tree
+   */
+  function getToggleSiblings(deep = 0, tree = []) {
+    const elms = [...tree.slice(0, deep - 1)];
+    let siblings = [];
+
+    elms.forEach(elm => {
+      const elmSiblings = getSiblings(elm);
+      siblings = [...siblings, ...elmSiblings];
+    });
 
     return siblings;
   }
