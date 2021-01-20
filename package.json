@@ -26,7 +26,7 @@
   "scripts": {
     "dev-watch": "rollup a11y-dialog.js --file example/main.js -w",
     "copy": "cp a11y-dialog.js example/main.js",
-    "minify": "uglifyjs a11y-dialog.js -o a11y-dialog.min.js -c -m",
+    "minify": "terser a11y-dialog.js -o a11y-dialog.min.js -c -m",
     "build": "npm run minify && npm run copy",
     "postbuild": "npm run add-version",
     "lint": "semistandard a11y-dialog.js",
@@ -56,6 +56,7 @@
     "prettier": "^1.10.2",
     "rollup": "^2.36.1",
     "semistandard": "^7.0.5",
+    "terser": "^5.5.1",
     "uglify-js": "^2.6.1"
   }
 }

@@ -1,6 +1,7 @@
 /* global NodeList, Element, Event, define */
 
 (function(global) {
+  'use strict';
 
   var FOCUSABLE_ELEMENTS = [
     'a[href]:not([tabindex^="-"]):not([inert])',
@@ -501,10 +502,10 @@
    * @param {HTMLButtonElement} toggle
    * @return {Array<Element>}
    */
-  function getSiblings(node, toggle= null) {
+  function getSiblings(node, toggle = null) {
     var nodes = toArray(node.parentNode.childNodes);
     var siblings = nodes.filter(function(node) {
-      return node.nodeType === 1 && node.tagName !== "SCRIPT" && node.tagName !== "STYLE";
+      return node.nodeType === 1 && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE';
     });
 
     siblings.splice(siblings.indexOf(node), 1);
@@ -530,7 +531,7 @@
   function getToggleParent(siblings = [], toggle) {
     let deep = 0;
     let tree = [];
-    let parentElm = undefined;
+    let parentElm;
 
     while (!siblings.some(elm => elm === parentElm)) {
       if (parentElm === undefined) {
@@ -547,7 +548,7 @@
       tree.push(parentElm);
     }
 
-    return {deep, tree};
+    return { deep, tree };
   }
 
   /**
