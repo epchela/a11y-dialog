@@ -19,7 +19,7 @@ You can try the [live demo ↗](http://edenspiekermann.github.io/a11y-dialog/exa
 ## Как использовать
 Элемент диалога должен иметь `role="alertdialog"`, например `<div role="alertdialog">`. Если использовать `role="dialog"` (например когда элемент`<dialog>` или `<div role="dialog">`), то будет проблема со скринридером.
 
-###Кнопка
+### Кнопка
 Пример кнопки:
 ```html
 <button type="button"
@@ -34,7 +34,7 @@ You can try the [live demo ↗](http://edenspiekermann.github.io/a11y-dialog/exa
 
 В зависимости от текущего состояния кнопки, в `aria-label` устанавливается значение `data-a11y-dialog-label-open` или `data-a11y-dialog-label-close`.
 
-###Стили
+### Стили
 К стилям добавить следующее:
 ```css
 [data-a11y-dialog-native-toggle]:not(.is-open) .dialog-overlay {
