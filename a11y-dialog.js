@@ -58,7 +58,7 @@
    * @param {(NodeList | Element | string)} targets
    * @return {this}
    */
-  A11yDialog.prototype.create = function (targets) {
+  A11yDialog.prototype.create = function(targets) {
     // Внешняя кнопка открытия и закрытия (например гамбургер)
     this._toggleBtn = document.querySelector('[data-a11y-dialog-show="' + this.container.id + '"][data-a11y-dialog-hide]');
 
@@ -504,7 +504,7 @@
    */
   function getSiblings(node, toggle = null) {
     var nodes = toArray(node.parentNode.childNodes);
-    var siblings = nodes.filter(function (node) {
+    var siblings = nodes.filter(function(node) {
       return node.nodeType === 1 && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE';
     });
 
