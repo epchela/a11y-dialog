@@ -32,6 +32,7 @@
     // removeEventListener to avoid losing references
     this._show = this.show.bind(this);
     this._hide = this.hide.bind(this);
+    this._toggleHandler = this.toggleHandler.bind(this);
     this._maintainFocus = this._maintainFocus.bind(this);
     this._bindKeypress = this._bindKeypress.bind(this);
 
@@ -94,20 +95,8 @@
     );
 
     if (this._toggleBtn) {
-      this._toggleBtn.addEventListener('click', (event) => {
-        const ct = event.currentTarget;
-
-        if (this.shown) {
-          this._hide();
-          ct.setAttribute('arial-label', ct.getAttribute('data-a11y-dialog-label-open'));
-        } else {
-          this._show();
-          ct.setAttribute('arial-label', ct.getAttribute('data-a11y-dialog-label-close'));
-        }
-      })
+      this._toggleBtn.addEventListener('click', this._toggleHandler)
     }
-
-
 
     if (!this.useDialog) {
       if (this.shown) {
@@ -124,6 +113,10 @@
       // Remove initial `aria-hidden` from container
       // See: https://github.com/edenspiekermann/a11y-dialog/pull/117#issuecomment-706056246
       this.container.removeAttribute('aria-hidden');
+    }
+
+    if (this._toggleBtn && this.role === 'dialog') {
+      console.warn('Don\'t allow use toggleBtn and <div> with role="dialog"!');
     }
 
     // Execute all callbacks registered for the `create` event
@@ -242,6 +235,24 @@
 
     return this;
   };
+
+  /**
+   * Toggle visibility the dialog element
+   *
+   * @param {Event} event
+   * @return {this}
+   */
+  A11yDialog.prototype.toggleHandler = function (event) {
+    const ct = event.currentTarget;
+
+    if (this.shown) {
+      this._hide();
+      ct.setAttribute('arial-label', ct.getAttribute('data-a11y-dialog-label-open'));
+    } else {
+      this._show();
+      ct.setAttribute('arial-label', ct.getAttribute('data-a11y-dialog-label-close'));
+    }
+  }
 
   /**
    * Destroy the current instance (after making sure the dialog has been hidden)
